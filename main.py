@@ -5,7 +5,7 @@ import os
 
 app = FastAPI()
 
-# Allow CORS (especially helpful for testing with Postman, frontend, etc.)
+# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,11 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize SymSpell
+# Load SymSpell dictionary
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
-
-# Load dictionary
 dict_path = "frequency_dictionary_en_82_765.txt"
+
 if os.path.exists(dict_path):
     sym_spell.load_dictionary(dict_path, term_index=0, count_index=1)
 else:
@@ -28,10 +27,6 @@ else:
 async def spell_check(request: Request):
     data = await request.json()
     input_text = data.get("text", "")
-    
     suggestions = sym_spell.lookup_compound(input_text, max_edit_distance=2)
     corrected = suggestions[0].term if suggestions else input_text
-
     return {"corrected": corrected}
-
-# Do NOT include __main__ block — Render runs the app automatically
