@@ -14,12 +14,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# GET endpoint for webhook verification (plain text response)
-@app.get("/spellcheck")
+# ✅ Separate GET endpoint only for Chatbot.com webhook verification
+@app.get("/verify")
 async def verify_webhook(verification_token: str = ""):
     return Response(content=verification_token, media_type="text/plain")
 
-# Optional root endpoint
+# Optional root endpoint (for manual health check)
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
