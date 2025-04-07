@@ -14,12 +14,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Verification token GET handler for Chatbot.com
+# GET endpoint for Chatbot.com verification
 @app.get("/spellcheck")
-def verify_webhook(verification_token: str = ""):
-    return verification_token  # return raw string ONLY!
+async def verify_webhook(verification_token: str = ""):
+    return verification_token  # Just return the token as plain text
 
-# Root health check
+# Root endpoint (optional)
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
@@ -33,7 +33,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# Spellcheck endpoint
+# POST endpoint for spellchecking
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
