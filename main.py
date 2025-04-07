@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from symspellpy.symspellpy import SymSpell, Verbosity
 import os
@@ -14,10 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# GET endpoint for webhook verification
+# GET endpoint for webhook verification (plain text response)
 @app.get("/spellcheck")
 async def verify_webhook(verification_token: str = ""):
-    return verification_token  # Plain text (not JSON)
+    return Response(content=verification_token, media_type="text/plain")
 
 # Optional root endpoint
 @app.get("/")
