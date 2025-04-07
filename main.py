@@ -14,14 +14,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Webhook verification (Chatbot.com sends a GET with ?verification_token=XYZ)
+# ✅ Verification token GET handler for Chatbot.com
 @app.get("/spellcheck")
 def verify_webhook(verification_token: str = ""):
-    return verification_token  # Must return plain string
+    return verification_token  # return raw string ONLY!
 
-# Root route
+# Root health check
 @app.get("/")
-def read_root():
+def root():
     return {"message": "Spellcheck API is running"}
 
 # Initialize SymSpell
@@ -33,7 +33,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# Spellcheck POST
+# Spellcheck endpoint
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
