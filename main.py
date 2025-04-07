@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Separate GET endpoint only for Chatbot.com webhook verification
+# Separate GET endpoint only for Chatbot.com webhook verification
 @app.get("/verify")
 async def verify_webhook(verification_token: str = ""):
     return Response(content=verification_token, media_type="text/plain")
