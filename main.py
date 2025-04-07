@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Root route to test if the API is alive
+# Root route to verify API is running
 @app.get("/")
 def read_root():
     return {"message": "Spellcheck API is running"}
