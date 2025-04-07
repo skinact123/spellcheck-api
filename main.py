@@ -19,6 +19,11 @@ app.add_middleware(
 def read_root():
     return {"message": "Spellcheck API is running"}
 
+# ✅ Webhook validation GET route
+@app.get("/spellcheck")
+async def validate_webhook():
+    return {"status": "Webhook GET OK"}
+
 # Initialize SymSpell
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
@@ -28,6 +33,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
+# POST spellcheck endpoint
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
