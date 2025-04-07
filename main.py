@@ -19,10 +19,10 @@ app.add_middleware(
 def read_root():
     return {"message": "Spellcheck API is running"}
 
-# ✅ Webhook validation GET route
+# Webhook verification route for Chatbot.com
 @app.get("/spellcheck")
-async def validate_webhook():
-    return {"status": "Webhook GET OK"}
+async def validate_webhook(verification_token: str = ""):
+    return verification_token
 
 # Initialize SymSpell
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
@@ -33,7 +33,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# POST spellcheck endpoint
+# Spellcheck endpoint
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
