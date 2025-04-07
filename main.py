@@ -14,6 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root route to test if the API is alive
+@app.get("/")
+def read_root():
+    return {"message": "Spellcheck API is running"}
+
 # Initialize SymSpell
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
