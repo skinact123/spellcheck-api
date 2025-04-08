@@ -16,8 +16,8 @@ app.add_middleware(
 
 # ✅ Webhook verification endpoint
 @app.get("/verify")
-async def verify_webhook(verification_token: str = ""):
-    return Response(content=verification_token, media_type="text/plain")
+async def verify_webhook(challenge: str = "", token: str = ""):
+    return Response(content=challenge, media_type="text/plain")
 
 # Optional root health check
 @app.get("/")
