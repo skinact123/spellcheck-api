@@ -1,28 +1,33 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import List
 
 app = FastAPI()
 
-@app.get("/spellcheck")
-async def verify_token(token: str = ""):
-    return JSONResponse(content={"status": "ok"})
+class TextResponse(BaseModel):
+    text: List[str]
+
+class FulfillmentMessage(BaseModel):
+    text: TextResponse
+
+class WebhookResponse(BaseModel):
+    fulfillmentMessages: List[FulfillmentMessage]
 
 @app.post("/spellcheck")
 async def spellcheck(request: Request):
-    body = await request.json()
+    data = await request.json()
+    original_text = data.get("message", "Hello")
     
-    # Extract the message content
-    message = body.get("message", "").lower()
+    # Correct the text here (placeholder logic)
+    corrected = original_text.replace("hellooo", "hello").replace("hi", "Hello")
 
-    # Example spell check logic
-    corrections = {
-        "hellooo": "hello",
-        "hiiiii": "hi",
-        "byee": "bye",
-        "chat": "chatbot"
-    }
-
-    corrected_message = corrections.get(message, message)
-
-    # Only return the field that ChatBot accepts
-    return {"fulfillmentText": f"Corrected: {corrected_message}"}
+    response_data = WebhookResponse(
+        fulfillmentMessages=[
+            FulfillmentMessage(
+                text=TextResponse(text=[f"Corrected: {corrected}"])
+            )
+        ]
+    )
+    
+    return JSONResponse(content=response_data.dict())
