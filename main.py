@@ -1,26 +1,19 @@
 from fastapi import FastAPI, Request
-from pydantic import BaseModel
-from typing import Optional
-import uvicorn
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
-
-class UserRequest(BaseModel):
-    message: str
 
 @app.post("/spellcheck")
 async def spellcheck(request: Request):
     data = await request.json()
-    message = data.get("message", "")
-    
-    # ✅ Do your spell correction here:
-    corrected_message = message.replace("hellooo", "hello")  # Example only
 
-    # ✅ Return corrected response as `message`
-    return {
-        "message": corrected_message
-    }
+    user_message = data.get("message", "")
+    corrected_message = correct_spelling(user_message)  # your spellchecker logic
 
-# Optional: for local testing only
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=10000)
+    return JSONResponse(content={
+        "fulfillmentText": corrected_message
+    })
+
+def correct_spelling(text):
+    # Replace this with your actual logic
+    return text.replace("hellooo", "hello").replace("hii", "hi")
