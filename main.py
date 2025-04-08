@@ -14,17 +14,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ This endpoint is used for webhook verification
+# ✅ Verification endpoint for Chatbot.com webhook
 @app.get("/verify")
 async def verify_webhook(verification_token: str = ""):
     return Response(content=verification_token, media_type="text/plain")
 
-# Optional root check
+# Optional root endpoint
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
 
-# Initialize SymSpell
+# Load spellcheck dictionary
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
 
@@ -33,7 +33,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# Spellcheck endpoint
+# Spellchecking endpoint
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
