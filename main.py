@@ -14,12 +14,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Optional root health check
+# Health check
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
 
-# ✅ Initialize SymSpell
+# Load SymSpell dictionary
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
 
@@ -28,17 +28,20 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# ✅ Combined spellcheck + webhook verification endpoint
+# Unified webhook endpoint
 @app.api_route("/spellcheck", methods=["GET", "POST"])
 async def spellcheck(request: Request, challenge: str = "", token: str = ""):
     if request.method == "GET":
-        # Used only for webhook verification challenge
         return Response(content=challenge, media_type="text/plain")
 
-    # POST: actual spellcheck logic
+    # POST from ChatBot
     data = await request.json()
     print("Received spellcheck payload:", data)
-    input_text = data.get("text", "")
+
+    # ✅ Extract message from ChatBot payload
+    input_text = data.get("message", "")
     suggestions = sym_spell.lookup_compound(input_text, max_edit_distance=2)
     corrected = suggestions[0].term if suggestions else input_text
+
+    # ✅ Return exactly what ChatBot expects
     return {"message": corrected}
