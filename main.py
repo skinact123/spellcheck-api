@@ -14,12 +14,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Webhook verification endpoint
-@app.get("/verify")
-async def verify_webhook(challenge: str = "", token: str = ""):
-    return Response(content=challenge, media_type="text/plain")
+# ✅ Webhook verification endpoint (GET and POST allowed)
+@app.api_route("/verify", methods=["GET", "POST"])
+async def verify_webhook(request: Request, challenge: str = "", token: str = ""):
+    if request.method == "GET":
+        return Response(content=challenge, media_type="text/plain")
+    return {"message": "POST received"}  # Prevents 405 errors
 
-# Optional root health check
+# ✅ Optional health check
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
@@ -37,6 +39,7 @@ else:
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
+    print("Received spellcheck payload:", data)  # Debug log
     input_text = data.get("text", "")
     suggestions = sym_spell.lookup_compound(input_text, max_edit_distance=2)
     corrected = suggestions[0].term if suggestions else input_text
