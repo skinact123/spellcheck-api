@@ -5,7 +5,7 @@ import os
 
 app = FastAPI()
 
-# CORS
+# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,12 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Health
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
 
-# Spellcheck setup
+# Load dictionary
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
 
@@ -28,18 +27,17 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# Webhook endpoint (GET for verification, POST for spellcheck)
+# Webhook (GET for verification, POST for processing)
 @app.api_route("/spellcheck", methods=["GET", "POST"])
 async def spellcheck(request: Request, challenge: str = "", token: str = ""):
     if request.method == "GET":
         return Response(content=challenge, media_type="text/plain")
 
-    # POST from chatbot
     data = await request.json()
-    print("Received spellcheck payload:", data)
+    print("Received:", data)
     input_text = data.get("message", "")
     suggestions = sym_spell.lookup_compound(input_text, max_edit_distance=2)
     corrected = suggestions[0].term if suggestions else input_text
 
-    # ✅ Correct format for ChatBot (Dialogflow-style)
-    return {"fulfillmentText": corrected}
+    # ✅ Return what ChatBot expects
+    return {"message": corrected}
