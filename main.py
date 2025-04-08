@@ -1,12 +1,11 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
 from symspellpy.symspellpy import SymSpell, Verbosity
 import os
 
 app = FastAPI()
 
-# Enable CORS
+# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,17 +14,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Webhook verification endpoint
-@app.get("/verify", response_class=PlainTextResponse)
+# ✅ Webhook verification endpoint (must return plain text token)
+@app.get("/verify")
 async def verify_webhook(verification_token: str = ""):
-    return verification_token  # Must return plain text token for ChatBot.com
+    return Response(content=verification_token, media_type="text/plain")
 
-# ✅ Optional health check
+# Optional health check endpoint
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
 
-# ✅ Initialize SymSpell
+# Initialize SymSpell
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
 
@@ -34,7 +33,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# ✅ POST spellcheck handler
+# Spellcheck endpoint
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
