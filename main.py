@@ -14,19 +14,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Webhook verification endpoint (GET and POST allowed)
+# Webhook verification
 @app.api_route("/verify", methods=["GET", "POST"])
 async def verify_webhook(request: Request, challenge: str = "", token: str = ""):
     if request.method == "GET":
         return Response(content=challenge, media_type="text/plain")
-    return {"message": "POST received"}  # Prevents 405 errors
+    return {"message": "POST received"}
 
-# ✅ Optional health check
+# Health check
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
 
-# ✅ Initialize SymSpell
+# Initialize SymSpell
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
 
@@ -35,12 +35,12 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# ✅ Spellcheck endpoint
+# Spellcheck endpoint
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
-    print("Received spellcheck payload:", data)  # Debug log
+    print("Received spellcheck payload:", data)
     input_text = data.get("text", "")
     suggestions = sym_spell.lookup_compound(input_text, max_edit_distance=2)
     corrected = suggestions[0].term if suggestions else input_text
-    return {"corrected": corrected}
+    return {"message": corrected}  # ✅ Must return "message"
