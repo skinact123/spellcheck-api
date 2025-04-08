@@ -5,7 +5,7 @@ import os
 
 app = FastAPI()
 
-# CORS
+# CORS config
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,33 +14,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Webhook verification (GET)
+@app.get("/verify")
+async def verify_webhook(challenge: str = "", token: str = ""):
+    return Response(content=challenge, media_type="text/plain")
+
+# Health check
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
 
-# SymSpell setup
+# Load dictionary
 sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
 dict_path = "frequency_dictionary_en_82_765.txt"
-
 if os.path.exists(dict_path):
     sym_spell.load_dictionary(dict_path, term_index=0, count_index=1)
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-@app.api_route("/spellcheck", methods=["GET", "POST"])
-async def spellcheck(request: Request, challenge: str = "", token: str = ""):
-    if request.method == "GET":
-        return Response(content=challenge, media_type="text/plain")
-
+# ✅ Actual POST webhook (spellcheck)
+@app.post("/spellcheck")
+async def spell_check(request: Request):
     data = await request.json()
-    print("Received:", data)
-    input_text = data.get("message", "")
-    suggestions = sym_spell.lookup_compound(input_text, max_edit_distance=2)
-    corrected = suggestions[0].term if suggestions else input_text
+    message = data.get("message", "")
+    suggestions = sym_spell.lookup_compound(message, max_edit_distance=2)
+    corrected = suggestions[0].term if suggestions else message
 
-    # ✅ Wrap it inside a dictionary (ChatBot likely expects this)
+    # return ONLY the field you use in chatbot: "corrected_message"
     return {
-        "webhook": {
-            "message": corrected
-        }
+        "corrected_message": corrected
     }
