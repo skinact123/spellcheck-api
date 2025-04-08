@@ -14,13 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Replace this with your actual token from Chatbot.com
-CHATBOT_VERIFICATION_TOKEN = "abc123"
-
-# Webhook verification endpoint for Chatbot.com
+# Chatbot Webhook verification endpoint
 @app.get("/verify")
-async def verify_webhook():
-    return Response(content=CHATBOT_VERIFICATION_TOKEN, media_type="text/plain")
+async def verify_webhook(verification_token: str = ""):
+    # Return the token as plain text
+    return Response(content=verification_token, media_type="text/plain")
 
 # Optional root endpoint
 @app.get("/")
@@ -36,7 +34,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# Spellcheck POST endpoint
+# POST endpoint for spell checking
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
