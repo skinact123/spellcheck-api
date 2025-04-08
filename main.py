@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from symspellpy.symspellpy import SymSpell, Verbosity
 import os
 
 app = FastAPI()
 
-# CORS setup
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,12 +15,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Webhook verification endpoint (must return plain text token)
+# ✅ Verification route for chatbot.com Webhook
 @app.get("/verify")
 async def verify_webhook(verification_token: str = ""):
-    return Response(content=verification_token, media_type="text/plain")
+    # Chatbot expects this format: { "response": "your_token" }
+    return JSONResponse(content={"response": verification_token})
 
-# Optional health check endpoint
+# Optional root endpoint for checking status
 @app.get("/")
 def root():
     return {"message": "Spellcheck API is running"}
@@ -33,7 +35,7 @@ if os.path.exists(dict_path):
 else:
     raise FileNotFoundError("Dictionary file not found")
 
-# Spellcheck endpoint
+# POST endpoint to correct spelling
 @app.post("/spellcheck")
 async def spell_check(request: Request):
     data = await request.json()
