@@ -1,19 +1,17 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+import uvicorn
+from symspellpy.symspellpy import SymSpell, Verbosity
 
 app = FastAPI()
+sym_spell = SymSpell(max_dictionary_edit_distance=2)
+sym_spell.load_dictionary("frequency_dictionary_en_82_765.txt", term_index=0, count_index=1)
 
-@app.post("/spellcheck")
-async def spellcheck(request: Request):
-    data = await request.json()
+@app.post("/")
+async def correct_spelling(req: Request):
+    data = await req.json()
+    user_input = data.get("message", "")
+    suggestions = sym_spell.lookup(user_input, Verbosity.CLOSEST, max_edit_distance=2)
+    corrected = suggestions[0].term if suggestions else user_input
+    return {"corrected_message": corrected}
 
-    user_message = data.get("message", "")
-    corrected_message = correct_spelling(user_message)  # your spellchecker logic
-
-    return JSONResponse(content={
-        "fulfillmentText": corrected_message
-    })
-
-def correct_spelling(text):
-    # Replace this with your actual logic
-    return text.replace("hellooo", "hello").replace("hii", "hi")
+# Run using: uvicorn filename:app --reload
