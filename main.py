@@ -5,9 +5,10 @@ app = FastAPI()
 sym_spell = SymSpell(max_dictionary_edit_distance=2)
 sym_spell.load_dictionary("frequency_dictionary_en_82_765.txt", term_index=0, count_index=1)
 
+# 🛠 Add this to respond to Chatbot.com verification
 @app.get("/")
-def read_root():
-    return {"status": "Spellcheck API is running!"}
+def verify_webhook(challenge: str = "", token: str = ""):
+    return challenge  # Just echo back the challenge value
 
 @app.post("/")
 async def correct_spelling(req: Request):
